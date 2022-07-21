@@ -9,6 +9,8 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 // time.
 const TOKEN_PATH = 'token.json';
 
+const ignorePatterns = ['<>', '/', '1', 'Happy', '|']
+
 // Load client secrets from a local file.
 fs.readFile('credentials.json', (err, content) => {
   if (err) return console.log('Error loading client secret file:', err);
@@ -75,12 +77,27 @@ function listEvents(auth) {
   calendar.events.list({
     calendarId: 'primary',
     timeMax: (new Date()).toISOString(),
+    timeMin: (new Date(2021, 6, 12)).toISOString(),
     maxResults: 2500,
     singleEvents: true,
     orderBy: 'startTime',
   }, (err, res) => {
     if (err) return console.log('The API returned an error: ' + err);
     const events = res.data.items;
+
+    const detailedCSV = events.reduce((acc, event) => {
+      const start = event.start.dateTime || event.start.date;
+      const summary = event.summary ? event.summary : '';
+      const from = new Date(start);
+      const formattedFrom = `${from.getFullYear()}-${from.getMonth() + 1}-${from.getDate()}`;
+      const eventCSV = `${summary};${formattedFrom}`;
+      if (!event.attendees || event.attendees.length < 3 || ignorePatterns.some((pattern) => summary.includes(pattern))) {
+        return acc;
+      }
+      return acc + '\n' + eventCSV;
+    }, 'Event name;Date');
+
+    fs.writeFile('detailed.csv', detailedCSV, () => {})
     
     const result = events.reduce((acc, event) => {
       if(!acc[event.summary]){
