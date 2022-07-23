@@ -123,9 +123,9 @@ function listEvents(auth) {
           acc[title].hours +=
             (new Date(event.end.dateTime).getTime() -
               new Date(event.start.dateTime).getTime()) /
-            1000 /
-            60 /
-            60;
+              1000 /
+              60 /
+              60 || 0;
         }
 
         return acc;
