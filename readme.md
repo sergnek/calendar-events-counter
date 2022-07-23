@@ -8,3 +8,4 @@
 6. paste in console
 7. `node .`
 8. check the file `result.json` and `detailed.csv` created
+9. Check Aliases

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
+const aliases = require("./aliases");
 
 require("dotenv").config();
 
@@ -109,9 +110,11 @@ function listEvents(auth) {
       fs.writeFile("detailed.csv", detailedCSV, () => {});
 
       const result = events.reduce((acc, event) => {
-        if (event.summary) {
-          const title = event.summary.trim();
+        const summary = event.summary?.trim();
+        const title =
+          aliases[summary] !== undefined ? aliases[summary] : summary;
 
+        if (title) {
           if (!acc[title]) {
             acc[title] = {
               hours: 0,
